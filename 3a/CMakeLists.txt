@@ -4,7 +4,7 @@ set(CMAKE_C_STANDARD 11)
 set(SOURCE_EXE lab3a.c
         lab3afunc.c)
 set(SOURCE_LIB lab3alib.c)
-set(CMAKE_C_FLAGS "-fsanitize=address,undefined -O0 -g")
+set(CMAKE_C_FLAGS "-g -fsanitize=address,undefined")
 set(CMAKE_C_COMPILER "gcc")
 
 option(NDEBUG "Debug" ON)
