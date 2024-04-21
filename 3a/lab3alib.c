@@ -12,7 +12,7 @@ Table* Make_Table(uint64_t count){
     table->msize = count;
     KeySpace* ks = calloc(count, sizeof(KeySpace));
     if (!ks) { return NULL; }
-    else{ table->ks = ks; }
+    table->ks = ks;
     return table;
 }
 
@@ -30,8 +30,8 @@ int64_t Table_Search_Key(Table* table, char* key){ //Binsearch
 uint64_t Table_Insert_New(Table* table, char* key, uint64_t* data){ //for new key
     int64_t i = 0;
     Node* new = calloc(1, sizeof(Node));
-    uint64_t len = strlen(key) + 1;
     if (!new) return 1;
+    uint64_t len = strlen(key) + 1;
     if (table->csize){
         i = table->csize - 1;
         while (i >= 0 && strcmp((table->ks + i)->key, key) > 0){ //key shift
@@ -40,8 +40,9 @@ uint64_t Table_Insert_New(Table* table, char* key, uint64_t* data){ //for new ke
             i -= 1;
         }
         (table->ks + i + 1)->key = calloc(1, len);
+        if (!(table->ks + i + 1)->key) return 1;
         strcpy((table->ks + i + 1)->key, key);
-        (table->ks + i + 1)->node = new;
+        table->ks[i + 1].node = new;
     }
     else{
         (table->ks + i)->key = calloc(1, len);
@@ -95,7 +96,7 @@ uint64_t Table_Delete_Release(Table* table, uint64_t index, uint64_t release){
         printf("ERROR: Don`t have this release\n");
         return 1;
     }
-    Node* ptr = (table->ks + index)->node;
+    Node* ptr = table->ks[index].node;
     if (!ptr->next) {
         Table_Delete_All_Releases(table, index);
         return 0;
@@ -106,7 +107,7 @@ uint64_t Table_Delete_Release(Table* table, uint64_t index, uint64_t release){
         ptr = ptr->next;
     }
     if (!ptr_prev) {
-        (table->ks + index)->node = ptr->next;
+        table->ks[index].node = ptr->next;
     }
     if (ptr_prev) { ptr_prev->next = ptr->next; }
     free(ptr->info);

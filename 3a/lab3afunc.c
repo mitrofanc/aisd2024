@@ -19,6 +19,7 @@ uint64_t D_Insert_Node(Table* table){
     }
     printf("Input the key: ");
     char* key = str_in();
+    if (!key) return 0;
     printf("Input the data: ");
     uint64_t data = get_u64();
 
@@ -62,6 +63,7 @@ uint64_t D_Output_Table(Table* table){
 uint64_t D_Delete(Table* table){
     printf("Input the key of node to delete: ");
     char* key = str_in();
+    if (!key) return 1;
     uint64_t index = Table_Search_Key(table, key);
     if (index == -1) {
         printf("ERROR: Don`t have this key\n");
@@ -105,10 +107,12 @@ uint64_t D_Search_Table(Table* table){
     uint64_t choose = get_u64();
     RelType release = 0;
     InfoType* info = calloc(1, sizeof(InfoType));
+    if (!info) return 1;
     if (choose == 1){
         Node* ptr = (table->ks + index)->node;
         *(info) = *(ptr->info);
-        Table_Insert_New(copy_table, key, info);
+        uint64_t i = Table_Insert_New(copy_table, key, info);
+        if (i == 1) return 1;
         ptr = ptr->next;
         while (ptr){
             release = ptr->release;
@@ -121,7 +125,7 @@ uint64_t D_Search_Table(Table* table){
         printf("Input release: ");
         release = get_u64();
         printf("\n");
-        if ((table->ks + index)->node->release < release){
+        if (table->ks[index].node->release < release){
             printf("ERROR: Don`t have this release\n");
             return 1;
         }
@@ -131,7 +135,7 @@ uint64_t D_Search_Table(Table* table){
             ptr_prev = ptr;
             ptr = ptr->next;
         }
-        *(info) = *(ptr->info);
+        *info = *ptr->info;
         Table_Insert_New(copy_table, key, info);
     }
     D_Output_Table(copy_table);
@@ -168,6 +172,7 @@ char* getKey(char* str, uint64_t* index){
 uint64_t D_Fill_From_File (Table** table) {
     printf("Input file's name: ");
     char *file_name = str_in();
+    if (!file_name) return 1;
     printf("\n");
     char *key;
     uint64_t info;
@@ -176,34 +181,37 @@ uint64_t D_Fill_From_File (Table** table) {
         printf("ERROR: No such file\n");
         printf("\n");
         return 1;
-    } else {
-        if (*table) {
-            Table_Free(*table);
+    }
+    if (*table) {
+        Table_Free(*table);
+    }
+    *table = D_Make_Table();
+    char *str;
+    size_t len;
+    while (getline(&str, &len, file) != -1) {
+        len = 0;
+        uint64_t index;
+        key = getKey(str, &index);
+        if (!key) return 1;
+        sscanf(str + index, "%llu", &info);
+        int64_t check = Table_Search_Key(*table, key);
+        if (check == -1) {
+            uint64_t i = Table_Insert_New(*table, key, &info);
+            if (i == 1) return 1;
+        } else {
+            uint64_t i = Table_Insert_New_Release(*table, check, &info);
+            if (i == 1) return 1;
         }
-        *table = D_Make_Table();
-        char *str;
-        size_t len;
-        while (getline(&str, &len, file) != -1) {
-            len = 0;
-            uint64_t index;
-            key = getKey(str, &index);
-            sscanf(str + index, "%llu", &info);
-            int64_t check = Table_Search_Key(*table, key);
-            if (check == -1) {
-                Table_Insert_New(*table, key, &info);
-            } else {
-                Table_Insert_New_Release(*table, check, &info);
-            }
-            free(key);
-            free(str);
-            str = NULL;
-            len = 0;
-        }
+        free(key);
+        free(str);
+        str = NULL;
+        len = 0;
         printf("The data successfully extracted from the file\n");
         printf("\n");
         fclose(file);
         return 0;
     }
+    return 0;
 }
 
 uint64_t get_u64(){
