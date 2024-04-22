@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define floor(x) ((float)((int)x))
 #include "lab3afunc.h"
 
 int main(){

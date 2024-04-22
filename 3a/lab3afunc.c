@@ -117,7 +117,8 @@ uint64_t D_Search_Table(Table* table){
         while (ptr){
             release = ptr->release;
             *(info) = *(ptr->info);
-            Table_Insert_New_Release(copy_table, 0, info);
+            uint64_t i = Table_Insert_New_Release(copy_table, 0, info);
+            if (i == 1) return 1;
             ptr = ptr->next;
         }
     }
