@@ -18,10 +18,8 @@ T_Error table_make(Table** table, uint64_t count){
 
 unsigned long long hash(char* key){
     uint64_t hash = INT_MAX;
-//    while(*key){
     for (int i = 0; key[i] != '\0'; i++){
         hash = 57 * hash + *key;
-//        key++;
     }
     return hash;
 }
@@ -123,20 +121,17 @@ T_Error table_output_bin(Table* table, char* file_name){
     if (!fwrite((void*) &(table->msize), sizeof(uint64_t), 1, file)){
         goto close_file_output;
     }
-//    if (!fwrite((void*) &separator, sizeof(char), 1, file)){
-//        goto close_file_output;
-//    }
     for (uint64_t i = 0; i < table->msize; i++){
         if (table->ks[i]){
             KeySpace* tmp = table->ks[i];
             while (tmp){
-                if (!fwrite((void*) tmp->key, sizeof(char), strlen(tmp->key), file)){ // +1
+                if (!fwrite((void*) tmp->key, sizeof(char), strlen(tmp->key), file)){
                     goto close_file_output;
                 }
                 if (!fwrite((void*) &separator, sizeof(char), 1, file)){
                     goto close_file_output;
                 }
-                if (!fwrite((void*) tmp->info, sizeof(char), strlen(tmp->info), file)){ //+1
+                if (!fwrite((void*) tmp->info, sizeof(char), strlen(tmp->info), file)){
                     goto close_file_output;
                 }
                 if (!fwrite((void*) &separator, sizeof(char), 1, file)){
@@ -187,7 +182,6 @@ T_Error table_input_bin(Table** table, char* file_name){
                 break;
             }
             key_len += 1;
-//            char* dup = key;
             tmp = realloc(key, key_len * sizeof(char));
             if (!tmp){
                 free(key);
