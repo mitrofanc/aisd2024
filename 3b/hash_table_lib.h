@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <string.h>
 #include <readline/readline.h>
+#include <math.h>
 
 typedef enum T_Error{
     ERROR_NO,
@@ -20,14 +21,17 @@ typedef enum T_Error{
 } T_Error;
 
 T_Error table_make(Table** table, uint64_t count);
-unsigned long long hash(char* key);
+uint64_t hash(char* key);
 T_Error table_search(Table* table, char* key, KeySpace** ret);
-T_Error table_insert(Table* table, char* key, char* info);
+T_Error table_insert(Table** table, char* key, char* info);
+T_Error table_transfer(Table** table, uint64_t msize);
 T_Error table_delete(Table* table, char* key);
 T_Error table_print(Table* table);
 T_Error table_free(Table** table);
 T_Error table_output_bin(Table* table, char* file_name);
 T_Error table_input_bin(Table** table, char* file_name);
 void print_errors(T_Error error);
+uint64_t is_prime_num(uint64_t num);
+uint64_t prime_search(uint64_t num);
 
 #endif //LAB3B_AADS_HASH_TABLE_LIB_H

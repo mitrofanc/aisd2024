@@ -3,7 +3,7 @@
 #include "hash_table_lib.h"
 
 T_Error D_Make(Table** table);
-T_Error D_Insert(Table* table);
+T_Error D_Insert(Table** table);
 T_Error D_Delete(Table* table);
 T_Error D_Search(Table* table);
 T_Error D_Output(Table* table);

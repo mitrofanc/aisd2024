@@ -22,7 +22,7 @@ int main() {
                 error = D_Make(&table);
                 break;
             case 2:
-                error = D_Insert(table);
+                error = D_Insert(&table);
                 break;
             case 3:
                 error = D_Delete(table);

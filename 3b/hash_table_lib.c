@@ -16,7 +16,7 @@ T_Error table_make(Table** table, uint64_t count){
     return ERROR_NO;
 }
 
-unsigned long long hash(char* key){
+uint64_t hash(char* key){
     uint64_t hash = INT_MAX;
     for (int i = 0; key[i] != '\0'; i++){
         hash = 57 * hash + *key;
@@ -38,19 +38,25 @@ T_Error table_search(Table* table, char* key, KeySpace** ret){
     return ERROR_NOT_KEY;
 }
 
-T_Error table_insert(Table* table, char* key, char* info){
-    uint64_t index = hash(key) % table->msize;
+T_Error table_insert(Table** table, char* key, char* info){
+    uint64_t index = hash(key) % (*table)->msize;
     KeySpace* ret = NULL;
-    table_search(table, key, &ret);
+    table_search(*table, key, &ret);
     if (ret) return ERROR_SAME_KEY;
+    if (!(*table)->ks[index]) (*table)->csize += 1;
+    if ((*table)->csize == (*table)->msize){ //increasing the table
+        uint64_t msize = prime_search((*table)->msize);
+        T_Error error = table_transfer(table, msize);
+        if (error != ERROR_NO) return error;
+    }
     KeySpace* new = (KeySpace*) calloc(1, sizeof(KeySpace));
     if (!new) return ERROR_ALLOC_MEM;
     new->key = strdup(key);
     if (!new->key) goto clean_new;
     new->info = strdup(info);
     if (!new->info) goto clean_key;
-    new->next = table->ks[index];
-    table->ks[index] = new;
+    new->next = (*table)->ks[index];
+    (*table)->ks[index] = new;
     return ERROR_NO;
 
     clean_key:
@@ -58,6 +64,29 @@ T_Error table_insert(Table* table, char* key, char* info){
     clean_new:
     free(new);
     return ERROR_ALLOC_MEM;
+}
+
+T_Error table_transfer(Table** table, uint64_t msize){
+    Table* new_table = NULL;
+    T_Error error = ERROR_NO;
+    error = table_make(&new_table, msize);
+    if (error != ERROR_NO) return error;
+    for (uint64_t i = 0; i < (*table)->msize; i++){
+        if ((*table)->ks[i]){
+            KeySpace* ptr = (*table)->ks[i];
+            while (ptr){
+                error = table_insert(&new_table, ptr->key, ptr->info);
+                if (error != ERROR_NO){
+                    table_free(&new_table);
+                    return error;
+                }
+                ptr = ptr->next;
+            }
+        }
+    }
+    table_free(table);
+    *table = new_table;
+    return error;
 }
 
 T_Error table_delete(Table* table, char* key){
@@ -74,6 +103,7 @@ T_Error table_delete(Table* table, char* key){
     free(ptr->key);
     free(ptr->info);
     free(ptr);
+    if (!table->ks[index]) table->csize -= 1;
     return ERROR_NO;
 }
 
@@ -172,7 +202,6 @@ T_Error table_input_bin(Table** table, char* file_name){
     fseek(file, 8, SEEK_SET);
     while (size > (uint64_t)ftell(file)) {
         while (1) {
-            printf("b %d\n",feof(file));
             if (!fread(&symbol, sizeof(char), 1, file)){
                 error = ERROR_INPUT_FROM_BIN;
                 goto close_file_input;
@@ -274,4 +303,22 @@ void print_errors(T_Error error){
             break;
     }
     printf("\n");
+}
+
+uint64_t is_prime_num(uint64_t num){
+    if (num < 2) return 1;
+    for (uint64_t i = 2; i < (uint64_t)sqrt((double)num); i++) {
+        if (num % i == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+uint64_t prime_search(uint64_t num){
+    uint64_t ret = num * 2;
+    while (is_prime_num(ret) == 1){
+        ret -= 1;
+    }
+    return ret;
 }

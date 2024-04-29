@@ -7,7 +7,7 @@ T_Error D_Make(Table** table){
     return table_make(table, size);
 }
 
-T_Error D_Insert(Table* table){
+T_Error D_Insert(Table** table){
     if (!table) return ERROR_TABLE_NULL;
     printf("Input the key to insert: ");
     char* key = readline(PROMPT);
@@ -36,7 +36,7 @@ T_Error D_Search(Table* table){
     KeySpace* ret = NULL;
     T_Error check = table_search(table, key, &ret);
     if (check == ERROR_NOT_KEY) return ERROR_NOT_KEY;
-    if (table_insert(new_table, ret->key, ret->info) == ERROR_ALLOC_MEM) return ERROR_ALLOC_MEM;
+    if (table_insert(&new_table, ret->key, ret->info) == ERROR_ALLOC_MEM) return ERROR_ALLOC_MEM;
     table_print(new_table);
     table_free(&new_table);
     return ERROR_NO;
