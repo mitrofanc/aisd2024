@@ -1,1 +1,8 @@
-.DS_Store
+*/Makefile
+*.o
+**/.idea
+*.dSYM
+*.bin
+**/build
+**/cmake-build-debug
+*.DS_Store
