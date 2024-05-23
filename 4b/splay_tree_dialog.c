@@ -8,14 +8,14 @@ T_Error D_Search(Node** root){
     Node* node_ret = NULL;
     T_Error check = splay_tree_search(root, key, &node_ret);
     if (check) return check;
-    check = splay_tree_print_infolist(node_ret->list);
-    return check;
+    return splay_tree_print_infolist(node_ret->list);
 }
 
 T_Error D_Search_Special(Node** root){
     if (!root) return ERROR_TREE_NULL;
     Node* ret = NULL;
-    splay_tree_search_min(root, &ret);
+    T_Error error = splay_tree_search_min(root, &ret);
+    if (error) return error;
     return splay_tree_print_infolist(ret->list);
 }
 

@@ -82,11 +82,9 @@ T_Error splay(Node** x, Node** root){
 
 T_Error splay_tree_search(Node** root, KeyType key, Node** ret){
     if (splay_tree_search_wos(*root, key, ret) == ERROR_NO) return splay(ret, root); //Had searched key
-    else {
-        T_Error error = splay(ret, root);
-        if (error) return error;
-        return ERROR_NOT_KEY;
-    }
+    T_Error error = splay(ret, root);
+    if (error) return error;
+    return ERROR_NOT_KEY;
 }
 
 T_Error splay_tree_search_wos(Node* ptr, KeyType key, Node** ret){ // in start ptr is the root, search without splay
@@ -119,9 +117,10 @@ T_Error splay_tree_search_min(Node** root, Node** ret){ // In start ptr = root
 T_Error splay_tree_insert(Node** root, KeyType key, InfoType info){
     if (*root){
         Node* key_ret = NULL;
-        splay_tree_search_wos(*root, key, &key_ret);
+        T_Error error = splay_tree_search_wos(*root, key, &key_ret);
+        if (error) return error;
         if (key_ret && key_ret->key == key) {
-            T_Error error = splay_tree_insert_info(&(key_ret->list), info);
+            error = splay_tree_insert_info(&(key_ret->list), info);
             if (error) return error;
             return splay(&key_ret, root);
         }
@@ -190,8 +189,7 @@ T_Error splay_tree_delete(Node** root, KeyType key){
         else ptr_prev->right = supp;
         T_Error error = splay(&ptr_prev, root);
         if (error) return error;
-        error = splay_tree_free_node(ptr);
-        return error;
+        return splay_tree_free_node(ptr);
     }
     else {
         // Delete Node with 2 children
@@ -313,7 +311,8 @@ T_Error splay_tree_output_graphviz(Node* ptr){
     if (!ptr) return ERROR_TREE_NULL;
     printf("\n");
     printf("https://dotrend.dozen.mephi.ru/?dot=digraph%%7B");
-    splay_tree_output_graphviz_links(ptr);
+    T_Error error = splay_tree_output_graphviz_links(ptr);
+    if (error) return error;
     printf("%%7D\n");
     return ERROR_NO;
 }
@@ -322,9 +321,13 @@ T_Error splay_tree_insert_from_file(Node** root, char* file_name){
     T_Error error = ERROR_NO;
     FILE* file = fopen(file_name,"r");
     if (!file) {
+        fclose(file);
         return ERROR_NO_FILE;
     }
-    if (*root) splay_tree_free(root);
+    if (*root) {
+        error = splay_tree_free(root);
+        if (error) return error;
+    }
     KeyType key;
     InfoType info;
     while (fscanf(file, "%llu", &key) == 1 && fscanf(file, "%llu", &info) == 1) {
@@ -339,15 +342,17 @@ T_Error splay_tree_insert_from_file(Node** root, char* file_name){
     return error;
 }
 
-T_Error splay_tree_count_zero(int* ptr, char* file_name){
+/*
+T_Error splay_tree_count_zero(int* ptr, char* file_name) {
     T_Error error = ERROR_NO;
-    FILE* file = fopen(file_name,"r");
+    FILE *file = fopen(file_name, "r");
     if (!file) {
         return ERROR_NO_FILE;
     }
 
 
 }
+*/
 
 void print_errors(T_Error error){
     switch (error){
