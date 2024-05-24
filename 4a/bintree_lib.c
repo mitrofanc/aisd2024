@@ -1,11 +1,5 @@
 #include "bintree_lib.h"
 
-#ifndef NDEBUG
-#define DBG_PRINT(...) printf(__VA_ARGS__)
-#else
-#define DBG_PRINT(...)
-#endif
-
 T_Error bintree_make(Node** root){
     *root = calloc(1, sizeof(Node*));
     if (!*root) return ERROR_ALLOC_MEM;
@@ -48,25 +42,18 @@ Node* bintree_search_max(Node* ptr){ // In start ptr = root
 T_Error bintree_search_special(Node* root, KeyType key, Node** special_key_ret){
     if (!root) return ERROR_TREE_NULL;
     Node* key_ret = NULL;
-    bintree_search_key(root, key, &key_ret);
+    T_Error error = bintree_search_key(root, key, &key_ret);
+    if (error) return error;
     if (!key_ret || !key_ret->thread) return ERROR_NOT_KEY;
     *special_key_ret = key_ret->thread;
     return ERROR_NO;
 }
 
-//T_Error bintree_search_max_from_smaller(Node* root, KeyType key, Node** max_key_ret){
-//    if (!root) return ERROR_TREE_NULL;
-//    Node* key_ret = NULL;
-//    bintree_search_key(root, key, &key_ret);
-//    bintree_search_min()
-//
-//}
-
 T_Error bintree_insert(Node** root, KeyType key, InfoType info){
     if (*root){
         Node* key_ret = NULL;
-        bintree_search_key(*root, key, &key_ret);
-        T_Error error = ERROR_NO;
+        T_Error error = bintree_search_key(*root, key, &key_ret);
+        if (error) return error;
         if (key_ret) {
             error = bintree_insert_info(&(key_ret->list), info);
             return error;
@@ -93,7 +80,6 @@ T_Error bintree_insert(Node** root, KeyType key, InfoType info){
     if (strcmp(key, par->key) < 0) { par->left = new; } // Parent != NULL!!!
     else { par->right = new; }
     new->par = par;
-    Node* check = bintree_search_min(*root);
     if (bintree_search_min(*root) == new){ // If new is minimal
         new->thread = par;
         return ERROR_NO;
@@ -198,7 +184,8 @@ T_Error bintree_delete_info(InfoList** head, uint64_t num){
 T_Error bintree_traversal_direct(Node* root, KeyType key){
     if (!root) return ERROR_TREE_NULL;
     Node* key_ret = NULL;
-    bintree_search_key(root, key, &key_ret);
+    T_Error error = bintree_search_key(root, key, &key_ret);
+    if (error) return error;
     if (!key_ret) { key_ret = bintree_search_max(root); }
     Node* ptr = bintree_search_min(root);
     while (strcmp(ptr->key, key_ret->key) < 0) {
@@ -269,13 +256,12 @@ T_Error bintree_free(Node** root){
 T_Error bintree_copy_infolist(InfoList* old, InfoList* new){
     if (!old) return ERROR_EMPTY_INFOLIST;
     InfoList* ptr = old;
-    T_Error error = ERROR_NO;
     while (ptr->next){
-        error = bintree_insert_info(&new, ptr->info);
+        T_Error error = bintree_insert_info(&new, ptr->info);
         ptr = ptr->next;
         if (error) return error;
     }
-    return error;
+    return ERROR_NO;
 }
 
 T_Error bintree_insert_from_file(Node** root, char* file_name){

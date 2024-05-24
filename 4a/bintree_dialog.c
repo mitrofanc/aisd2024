@@ -1,12 +1,6 @@
 #include "bintree_dialog.h"
 #define PROMPT ""
 
-#ifndef NDEBUG
-#define DBG_PRINT(...) printf(__VA_ARGS__)
-#else
-#define DBG_PRINT(...)
-#endif
-
 T_Error D_Make(Node** root){
     return bintree_make(root);
 }
@@ -38,8 +32,7 @@ T_Error D_Search_Special(Node* root){
     printf("The key for which need to find the minimum key after it: ");
     KeyType key = readline(PROMPT);
     Node* special_key_ret = NULL;
-    T_Error error = ERROR_NO;
-    error = bintree_search_special(root, key, &special_key_ret);
+    T_Error error = bintree_search_special(root, key, &special_key_ret);
     if (error) return error;
     printf("Result of the search: %s\n", special_key_ret->key);
     return ERROR_NO;
