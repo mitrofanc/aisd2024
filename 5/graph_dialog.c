@@ -224,7 +224,7 @@ void print_menu(){
     printf("8. Change edge information\n");
     printf("9. Output graph like adjacency list\n");
     printf("10. Output graph with GraphViz\n");
-    printf("11. Graph traversal\n");//todo
+    printf("11. Graph traversal\n");
     printf("12. The shortest path between vertexes\n");
     printf("13. Path with maximum rating\n");
     printf("14. Input graph from file\n");

@@ -34,8 +34,6 @@ T_Error graph_insert_vertex(Graph* graph, char* name){
         graph->m_size += 1;
     }
     uint64_t i;
-    Vertex* check = graph_search_vertex(graph, name, &i);
-    if (check) return ERROR_HAVE_VERTEX;
     Vertex* vertex = calloc(1, sizeof(Vertex));
     if (!vertex) return ERROR_ALLOC_MEM;
     vertex->name = strdup(name);
@@ -80,27 +78,20 @@ T_Error graph_erase_vertex(Graph* graph, char* name){
     while (ptr){
         ptr_prev = ptr;
         ptr = ptr->next;
-        printf("ptr %p prev %p\n", ptr, ptr_prev);
         error = graph_erase_edge(graph, name, ptr_prev->to->name);
         if (error) return error;
-//        printf("%p\n", ptr);
-
     }
     free(vertex->name);
     free(vertex);
     for (uint64_t i = index; i < graph->m_size - 1; i++){
         graph->vertex_vector[i] = graph->vertex_vector[i + 1];
     }
-    Edge *rm = graph->vertex_vector[graph->m_size - 1]->edges, *rm_prev = NULL;
-    while (rm){
-        rm_prev = rm;
-        rm = rm->next;
-        free(rm_prev);
-    }
     graph->m_size -= 1;
     graph->c_size -= 1;
-    printf("%llu", graph->m_size);
-    graph->vertex_vector = (Vertex**) realloc(graph->vertex_vector, (graph->m_size) * sizeof(Vertex*));
+    Vertex* *tmp = graph->vertex_vector;
+    tmp = (Vertex**) realloc(graph->vertex_vector, (graph->m_size) * sizeof(Vertex*));
+    if (tmp) graph->vertex_vector = tmp;
+    else return ERROR_ALLOC_MEM;
     return ERROR_NO;
 }
 
@@ -155,7 +146,6 @@ T_Error graph_change_edge(Graph* graph, char* name_from, char* name_to, int new_
     while (ptr_to && ptr_to->to != from) ptr_to = ptr_to->next;
     if (!ptr_to) return ERROR_NOT_EDGE;
     ptr_to->mark = new_mark;
-    printf("%d\n", ptr_to->mark);
     return ERROR_NO;
 }
 
@@ -341,7 +331,6 @@ T_Error graph_input_from_file(Graph** graph, char* file_name){
     if (error) return error;
     for (uint64_t i = 0; i < (*graph)->m_size; i++){
         fscanf(file, "%s", from);
-        printf("%s\n",from);
         error = graph_insert_vertex(*graph, from);
         if (error) return error;
     }

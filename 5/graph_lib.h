@@ -12,12 +12,8 @@ typedef enum T_Error{
     ERROR_GRAPH_NULL,
     ERROR_NOT_VERTEX,
     ERROR_NOT_EDGE,
-//    ERROR_INPUT,
-//    ERROR_END_OF_TREE,
-//    ERROR_EMPTY_INFOLIST,
     ERROR_NO_FILE,
     ERROR_HAVE_VERTEX,
-//    ERROR_READING_FILE,
 } T_Error;
 
 T_Error graph_make(Graph** graph, uint64_t count);
